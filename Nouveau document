@@ -1,0 +1,518 @@
+Structure
+
+index.html
+css/
+	main.css
+js/
+	main.js
+    classes/
+    	Pen.class.js
+        
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>JavaScript</title>
+
+    <link rel="stylesheet" href="css/normalize.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link rel="stylesheet" href="css/magical-slate.css">
+
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <!-- Classes -->
+    <script src="js/classes/Pen.class.js"></script>
+</head>
+<body>
+    <h1><i class="fa fa-paint-brush"></i> Ardoise Magique ;-)</h1>
+
+    <main>
+        <canvas id="slate" class="slate" width="640" height="480"></canvas>
+
+        <canvas id="color-palette" class="color-palette hide" width="256" height="256"></canvas>
+    </main>
+
+    <hr>
+    <nav class="toolbar">
+        <ul>
+            <li>
+                <label>Outils</label>
+                <button id="tool-clear-canvas" title="Effacer"><i class="fa fa-eraser"></i></button>
+                <button id="tool-color-picker" title="Pipette"><i class="fa fa-eyedropper"></i></button>
+                <button id="tool-rectangle-drawer" title="Dessine un rectangle"></button>
+            </li>
+            <li>
+                <label>Couleur</label>
+                <div class="pen-color black" data-color="black"></div>
+                <div class="pen-color maroon" data-color="#5C2121"></div>
+                <div class="pen-color red" data-color="#B9121B"></div>
+                <div class="pen-color yellow" data-color="#FFBD07"></div>
+                <div class="pen-color green" data-color="#13B813"></div>
+                <div class="pen-color seagreen" data-color="#029E9A"></div>
+                <div class="pen-color blue" data-color="#0378A6"></div>
+            </li>
+            <li>
+                <label>Epaisseur</label>
+                <button class="pen-size" data-size="1">Fin</button>
+                <button class="pen-size" data-size="2">Normal</button>
+                <button class="pen-size" data-size="5">Epais</button>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Code principal -->
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+
+
+<script>
+
+/* ColorPalette.class.js */
+
+/* TODO */
+
+//Aura une propriété canvas qui correspond à son canvas (#color-palette)
+
+//Dans le constructeur de la classe, là vous pouvez créer le dégradé de couleurs
+
+var ColorPalette = function(pen)
+{
+
+	this.canvas = document.getElementById('color-palette');
+	this.context = this.canvas.getContext('2d');
+    this.pen = pen;
+    
+    var gradient;
+    
+    // Dégradé rouge -> vert -> bleu horizontal.
+    gradient = this.context.createLinearGradient(0, 0, this.canvas.width, 0); //Dégradé de couleur de gauche à droite
+    
+    gradient.addColorStop(0,    'rgb(255,   0,   0)');
+    gradient.addColorStop(0.15, 'rgb(255,   0, 255)');
+    gradient.addColorStop(0.32, 'rgb(0,     0, 255)');
+    gradient.addColorStop(0.49, 'rgb(0,   255, 255)');
+    gradient.addColorStop(0.66, 'rgb(0,   255,   0)');
+    gradient.addColorStop(0.83, 'rgb(255, 255,   0)');
+    gradient.addColorStop(1,    'rgb(255,   0,   0)');
+    
+    this.context.fillStyle = gradient;
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    
+    // Dégradé blanc opaque -> transparent -> noir opaque vertical.
+    gradient = this.context.createLinearGradient(0, 0, 0, this.canvas.height); //Dégradé blanc->noir du haut vers le bas
+    
+    gradient.addColorStop(0,   'rgba(255, 255, 255, 1)');
+    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+    gradient.addColorStop(0.5, 'rgba(0,     0,   0, 0)');
+    gradient.addColorStop(1,   'rgba(0,     0,   0, 1)');
+    
+    this.context.fillStyle = gradient;
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    //Evénement
+    this.canvas.addEventListener('click', this.onPickColor.bind(this));
+}
+
+ColorPalette.prototype.onPickColor = function(event)
+{
+
+	//Récupération de la souris dans le canvas
+    var rectangle = this.canvas.getBoundingClientRect();
+    
+    var location = {
+    	x: event.clientX - rectangle.x,
+        y: event.clientY - rectangle.y
+   	};
+    
+    var palette = this.context.getImageData(location.x, location.y, 1, 1);
+    console.log(palette.data);
+    
+    var color = {
+    	r: palette.data[0],
+        g: palette.data[1],
+        b: palette.data[2]
+    };
+    
+    //Modification de la couleur du crayon en lui passant les composantes RGB
+    this.pen.color = 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
+}
+
+
+
+
+
+
+/* Pen.class.js */
+
+//Création de la classe Pen
+
+var Pen = function()
+{
+	this.color = 'black';
+    this.size = 1;
+};
+
+
+/* Slate.class.js */
+
+/* Classe qui contient une propriété canvas qui a pour valeur l'élément html canvas de votre page HTML
+
+	Pour récupérer un élément à partir de son id: document.getElementById('slate')
+	
+*/
+
+var Slate = function(pen)
+{
+	this.canvas = document.getElementById('slate');
+	this.context = this.canvas.getContext("2d");
+	this.pen = pen; //Passé en paramètre lors de la création d'ardoise
+    
+    //Création d'une propriété currentLocation qui va représenter les coordonnées lors du dernier mouvement
+    this.currentLocation = {x: 0, y: 0};
+    this.canDraw = false; //Au début on ne dessine pas
+    
+    //Mise en place de l'événement mousemove sur le canvas
+    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+    this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+    //Appel de la méthode onMouseMove (donc méthode à créer)
+    //Elle affichera pour le moment des informations sur l'événement (console.log(event))
+}
+
+Slate.prototype.onMouseMove = function(event)
+{
+    //Récupère la position actuelle de la souris
+    var location = this.getMouseLocation(event);
+    
+    //Si je peux dessiner
+    if(this.canDraw == true)
+    {
+    	//Je dessine
+    
+        // Début du dessin.
+        this.context.beginPath();
+
+        // Dessine un trait entre les précédentes coordonnées de la souris et les nouvelles.
+        this.context.moveTo(this.currentLocation.x, this.currentLocation.y);
+        this.context.lineTo(location.x, location.y);
+
+        // Fin du dessin.
+        this.context.closePath();
+        
+        //On utilise les propriétés du crayon
+        this.context.strokeStyle = this.pen.color;
+        this.context.lineWidth = this.pen.size;
+
+        // Applique les changements dans le canvas.
+        this.context.stroke();
+
+        //On met à jour currentLocation
+        this.currentLocation = location;
+    }
+}
+
+Slate.prototype.onMouseDown = function(event)
+{
+	this.currentLocation = this.getMouseLocation(event);
+    
+	this.canDraw = true; //On peut dessiner
+
+}
+
+Slate.prototype.onMouseLeave = function(event)
+{
+	this.canDraw = false;
+	
+}
+
+Slate.prototype.onMouseUp = function(event)
+{
+
+	this.canDraw = false;
+
+}
+
+Slate.prototype.onClearCanvas = function()
+{
+	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+}
+
+Slate.prototype.drawRectangle = function()
+{
+	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+	this.context.beginPath();
+    this.context.rect(188, 50, 200, 100);
+    this.context.fillStyle = 'yellow';
+    this.context.fill();
+   	this.context.lineWidth = this.pen.size;
+    this.context.strokeStyle = this.pen.color;
+    this.context.stroke();
+
+}
+
+Slate.prototype.getMouseLocation = function(event)
+{
+	
+	//Retourne la position de la souris dans le canvas
+    //https://developer.mozilla.org/fr/docs/Web/API/Element/getBoundingClientRect
+    
+    var boundings = this.canvas.getBoundingClientRect();
+    
+    var location = {
+    
+    	x: event.clientX - boundings.x,
+        y: event.clientY - boundings.y
+    
+    };
+    
+    return location;
+    
+    //event.clientX => Position de la souris par rapport à la gauche de la page
+    //event.clientY => Position de la souris par rapport au haut de la page
+
+}
+
+
+/* Program.class.js */
+
+//Création de la classe Program
+//Contient toute la logique de gestion du programme (interactions avec les éléments)
+//Contient un objet de la classe Pen comme propriété
+
+var Program = function()
+{
+	//Création d'une propriété crayon
+	this.pen = new Pen();
+    
+    //Création d'une ardoise avec le crayon précédemment créé
+    this.slate = new Slate(this.pen);
+    
+    //Création d'une palette qui va utiliser le crayon
+    this.palette = new ColorPalette(this.pen);
+
+};
+
+Program.prototype.start = function()
+{
+
+	//Initialiser tous les événements
+    $('.pen-size').on('click', this.onPickSize.bind(this));
+    
+    $('.pen-color').on('click', this.onPickColor.bind(this));
+    
+    $('#tool-rectangle-drawer').on('click', this.slate.drawRectangle.bind(this.slate)); //bind(this.slate) => this à l'intérieur de drawRectangle ce sera l'objet slate
+    
+    $('#tool-clear-canvas').on('click', this.slate.onClearCanvas.bind(this.slate));
+    
+    $('#tool-color-picker').on('click', this.onClickColorPicker.bind(this));
+
+};
+
+Program.prototype.onPickSize = function(event)
+{
+    
+    //On change la valeur de l'épaisseur du crayon
+    
+    //Avec jQuery
+    this.pen.size = $(event.currentTarget).data('size');
+    
+    //Ou son équivalent en JavaScript
+    
+    //JS Natif
+    this.pen.size = event.currentTarget.dataset.size;
+
+}
+
+Program.prototype.onPickColor = function(event)
+{
+	//On change la couleur du crayon avec celle que l'on a récupéré
+	this.pen.color = $(event.currentTarget).data('color');
+}
+
+Program.prototype.onClickColorPicker = function()
+{
+
+	$('#color-palette').fadeToggle();
+
+}
+
+/* main.js */
+
+'use strict';
+
+$(function()
+{
+    //Déclare un objet qui représente le programme
+    var myProgram = new Program();
+    
+    //J'appelle la méthode start qui va initialiser le programme
+    myProgram.start();
+});
+
+
+</script>
+
+
+
+
+
+
+
+
+<style>
+
+/********************** CSS GENERAL **********************/
+
+*
+{
+    box-sizing: border-box;
+}
+
+body
+{
+    /* structure */
+    margin: 0 auto;
+    min-height: 100%;
+    width: 80%;
+
+    /* presentation */
+    background-color: #ECF0F1;
+    font-family: 'Open Sans', sans-serif;
+}
+
+canvas
+{
+    background-color: white;
+    box-shadow: 0 0 8px 1px #2C3E50;
+}
+canvas + canvas
+{
+    margin-left: 2em;
+}
+
+h1
+{
+    color: #E74C3C;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 4px #E79C94;
+}
+
+hr
+{
+    border-color: #ECF0F1;
+}
+
+main
+{
+    margin: 2em 0;
+}
+
+
+/********************** CLASSES GENERALES **********************/
+
+.hide
+{
+    display: none;
+}
+
+
+/********************** PALETTE DE COULEURS **********************/
+
+.color-palette
+{
+    cursor: crosshair;
+}
+
+
+/********************** COULEURS DE CRAYON PREDEFINIES **********************/
+
+.pen-color
+{
+    /* structure */
+    display: inline-block;
+    height: 2em;
+    position: relative;
+    top: 0.5em;
+    width: 2em;
+
+    /* presentation */
+    border-radius: 1em;
+}
+.pen-color.black
+{
+    background-color: black;
+}
+.pen-color.blue
+{
+    background-color: #0378A6;
+}
+.pen-color.green
+{
+    background-color: #13B813;
+}
+.pen-color.maroon
+{
+    background-color: #5C2121;
+}
+.pen-color.red
+{
+    background-color: #B9121B;
+}
+.pen-color.seagreen
+{
+    background-color: #029E9A;
+}
+.pen-color.yellow
+{
+    background-color: #FFBD07;
+}
+
+.pen-color + .pen-color
+{
+    margin-left: 1em;
+}
+
+
+/********************** ARDOISE **********************/
+
+.slate
+{
+    cursor: default;
+}
+
+
+/********************** BARRE D'OUTILS **********************/
+
+.toolbar ul
+{
+    /* structure */
+    padding-left: 0;
+
+    /* presentation */
+    list-style-type: none;
+}
+.toolbar ul li
+{
+    height: 2.5em;
+    margin-bottom: 0.5em;
+}
+.toolbar ul li label
+{
+    /* structure */
+    display: inline-block;
+    line-height: 2.5em;
+    width: 100px;
+
+    /* presentation */
+    color: #2980B9;
+    font-weight: bold;
+}
+
+</style>

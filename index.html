@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Ardoise Magique</title>
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Dosis" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Amatica+SC" rel="stylesheet">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+        <!-- Librairie jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <!-- Fonctions du projet -->
+        <script src="js/classes/Pen.class.js"></script>
+        <script src="js/classes/Slate.class.js"></script>
+        <script src="js/classes/ColorPalette.class.js"></script>
+        <script src="js/classes/Program.class.js"></script>
+
+
+    </head>
+    <body>
+        <header>
+            <h1>Tableau</h1>
+        </header>
+
+        <main>
+            <section>
+                <div class="droite">
+                    <canvas id="slate" width="700" height="430"> </canvas>
+                    <canvas width="200" height="200" hidden="hidden" id="color-palette" class="color-palette hide" ></canvas>
+                </div>
+            
+                <div class="gauche">
+                <div class="tools">
+                    <label>Outils:</label><br>
+                    <button id="tool-clear-canvas" title="Effacer"><i class="fa fa-eraser" aria-hidden="true"></i></button>
+            
+                    </button>
+                </div>
+
+                <div class="colors">
+                    <label>Couleurs:</label><br>
+                    <button data-color="white" class="pen-size pen-color white rond blanc" data-size="10"></button>
+                    <button data-color="black" class=" pen-color black rond noir"></button>
+                    <button data-color="red" class=" pen-color red rond rouge"></button>
+                    <button data-color="blue" class=" pen-color blue rond bleu"></button>
+                    <button data-color="green" class=" pen-color green rond vert"></button>
+                </div>
+
+                <div class="epaisseurs">
+                    <label> Epaisseur:</label><br>
+                    <button style="font-size: 15px;" class="pen-size" data-size="1">Fin</button>
+                    <button style="font-size: 15px;" class="pen-size" data-size="2">Normal</button>
+                    <button style="font-size: 15px;" class="pen-size" data-size="7">Epais</button>
+                </div>
+                </div>
+            </section>
+        </main>
+        <script src="js/main.js"></script>
+
+    </body>
+</html>

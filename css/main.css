@@ -1,0 +1,147 @@
+/*__________________________________GENERAL_____________________________*/
+* {
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+    font-size: 62.5%;
+    
+}
+
+html{
+    margin-top: 0;
+	background-color: #a9e7f3;
+    /* font-family: 'Dosis',sans-serif; */
+}
+
+main {
+    /* margin: auto; */
+    width: 100%;
+    padding: 25px;
+    
+}
+/*______________________________HEADER________________________________*/
+header {
+    text-align: center;
+	/* font-family: 'Amatic SC', cursive; */
+    width: 100%;
+	/* margin-bottom: 2rem; */
+}
+
+h1{
+    color:black;
+    text-align: center;
+    font-weight: normal;
+	font-size: 3rem;
+    /* margin-bottom: 1rem; */
+}
+
+/*__________________________boutons______________________________________*/
+label {
+    color: #00A0A4;
+    font-size: 3rem;
+    vertical-align: top;
+    text-align: left;
+    display: inline-block;
+    width: 12rem;
+    padding-top: 8px;
+}
+
+input {
+    display: inline-block;
+}
+
+#gauche {
+    height: auto;
+    width: auto;
+}
+/*___________________________________________________________________________*/
+section{
+    /* margin: 0 1rem; */
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+#slate {
+    background-color: white;
+    margin-right: 40px;
+    border: solid black 2px;
+}
+
+#tools{
+    width: 80%;
+    font-size: 20px;
+}
+
+#droite{
+    display: flex;
+    flex-direction: column;
+}
+
+#colors{
+    width: auto;
+    height: auto;
+}
+
+#epaisseurs{
+    width: auto;
+    height: auto;
+}
+#color-palette {
+    width: 20rem;
+    height: 20rem; 
+    box-shadow: 1rem 1rem 1rem 1rem #c0c0c0;
+    border-radius: 1rem;
+    margin-bottom: 4rem;
+    margin-top: 4rem;
+    margin-left: 2rem;
+}
+/*___________________________________boutons erase & pipette ________________________*/
+button {
+    padding: 3px;
+    margin: 6px;
+}
+.fa {
+    font-size: 1rem;
+    margin: 1rem;
+    padding: 1px;
+}
+#tool-clear-canvas {
+    color: deeppink;
+    font-size: 20px;
+}
+#tool-color-picker {
+    color: #0EECB1;
+}
+
+/*___________________________________boutons de couleurs________________________*/
+.white,.rond {
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    border: 1px black solid;
+    background: white;
+}
+.noir {
+    background: black;
+}
+
+.blanc {
+    font-size: 1rem;
+    margin: 1rem;
+    padding: 1px;
+    background: white;
+
+}
+
+.rouge {
+    background:#cc0000;
+}
+
+.vert{
+    background: green;
+}
+
+.bleu {
+    background: darkblue;
+}
